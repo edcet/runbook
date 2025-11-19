@@ -1,0 +1,51 @@
+name: Quality Gates
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          scandir: './scripts'
+          severity: error
+          ignore_paths: '.git'
+
+  shfmt:
+    name: Shell Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install shfmt
+        run: go install mvdan.cc/sh/v3/cmd/shfmt@latest
+      
+      - name: Check formatting
+        run: shfmt -i 2 -ci -sr -d scripts/
+
+  naming:
+    name: Naming Convention
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Validate script names
+        run: |
+          for script in scripts/*.sh; do
+            [ -f "$script" ] || continue
+            basename=$(basename "$script" .sh)
+            if [[ ! "$basename" =~ ^[a-z]+$ ]]; then
+              echo "❌ Invalid name: $basename (must be single lowercase word)"
+              exit 1
+            fi
+          done
+          echo "✅ All script names valid"
