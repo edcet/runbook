@@ -1,0 +1,49 @@
+[tasks.backup]
+description = "Backup dotfiles with restic (encrypted, deduplicated)"
+run = """
+restic backup ~/.config/atuin ~/.config/zsh ~/.zshrc \
+    --repo ~/backups/restic \
+    --tag dotfiles \
+    --exclude-caches
+atuin kv set "backup:last_run" "$(date -u +%s)"
+"""
+
+[tasks.restore]
+description = "Restore from latest backup"
+run = """
+restic restore latest \
+    --repo ~/backups/restic \
+    --target ~ \
+    --tag dotfiles
+"""
+
+[tasks.search]
+description = "Search across all markdown docs"
+run = "rg --type md \"$1\" docs/"
+
+[tasks.sync]
+description = "Sync atuin state"
+run = """
+atuin sync
+atuin dotfiles sync
+"""
+
+[tasks.list]
+description = "List all atuin scripts"
+run = "atuin scripts list"
+
+[tasks.kv-list]
+description = "Show atuin KV store"
+run = "atuin kv list"
+
+[tasks.completion]
+description = "Generate completion spec with carapace"
+run = "carapace $1"
+
+[tasks.init-backup]
+description = "Initialize restic repo (one-time)"
+run = "restic init --repo ~/backups/restic"
+
+[tasks.backup-ls]
+description = "Show what's in backup"
+run = "restic snapshots --repo ~/backups/restic"
