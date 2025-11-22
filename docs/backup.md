@@ -1,53 +1,50 @@
 ---
-tags: [script, backup, dotfiles]
-created: 2025-11-21
-version: 1.0.0
-usage: backup [DEST_DIR]
+tags: [runbook, backup, restic]
+created: {{date}}
 ---
 
-# backup
+# Backup Strategy
 
-Creates a timestamped tarball backup of dotfiles.
+Uses **restic** (not tar) for encrypted, deduplicated backups.
 
-## Why
-
-Your dotfiles contain critical system configuration. Regular backups ensure you can recover from:
-- Accidental deletions
-- Failed experiments
-- System migrations
-
-## Usage
+## Initialize Repository (One-time)
 
 ```bash
-# Backup to default location (~/backups)
-backup
-
-# Backup to custom location
-backup /path/to/backup/dir
+just init-backup
 ```
 
-## What Gets Backed Up
+## Create Backup
 
-- `~/.config/atuin` - Shell history and KV store
-- `~/.config/zsh` - ZSH configuration
+```bash
+just backup
+```
+
+This backs up:
+- `~/.config/atuin` - Shell history + KV store
+- `~/.config/zsh` - ZSH configuration  
 - `~/.zshrc` - Shell entry point
 
-## Implementation
+## Restore
 
 ```bash
-{{< include "../scripts/backup.sh" >}}
+just restore
 ```
 
-## Recovery
-
-To restore from a backup:
+## View Snapshots
 
 ```bash
-cd ~
-tar -xzf ~/backups/dotfiles-TIMESTAMP.tgz
+just backup-ls
+```
+
+## Atuin KV Integration
+
+Last backup timestamp is stored in Atuin KV:
+
+```bash
+atuin kv get "backup:last_run"
 ```
 
 ## Related
 
-- [[restore]] - Restore from backup (TODO)
-- [[sync]] - Sync dotfiles to remote (TODO)
+- [[restic-config]] - Restic configuration
+- [[atuin-kv]] - Atuin key-value store
